@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Компас Пути — Игра о тебе</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+    background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 50%, #ff9a9e 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+    color: #2d2d2d;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* ===== ФОНОВЫЙ ВОДЯНОЙ ЗНАК ===== */
+  body::before {
+    content: 'МЯГКАЯ МАТЕМАТИКА · МЯГКАЯ МАТЕМАТИКА · МЯГКАЯ МАТЕМАТИКА · МЯГКАЯ МАТЕМАТИКА · МЯГКАЯ МАТЕМАТИКА · МЯГКАЯ МАТЕМАТИКА';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    font-size: 42px;
+    font-weight: 900;
+    color: rgba(224, 90, 138, 0.045);
+    letter-spacing: 8px;
+    line-height: 1.8;
+    transform: rotate(-25deg) scale(1.5);
+    transform-origin: center;
+    pointer-events: none;
+    z-index: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px;
+    word-break: break-word;
+    user-select: none;
+  }
+
+  /* ===== ВЕРХНЯЯ РЕКЛАМНАЯ ПОЛОСА ===== */
+  .top-promo {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(90deg, rgba(246,160,46,0.95), rgba(224,90,138,0.95));
+    color: white;
+    text-align: center;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    letter-spacing: 0.3px;
+  }
+
+  .top-promo a {
+    color: white;
+    text-decoration: underline;
+    font-weight: 700;
+    transition: opacity 0.2s;
+    margin-left: 4px;
+  }
+
+  .top-promo a:hover { opacity: 0.8; }
+
+  /* ===== ОСНОВНОЙ КОНТЕЙНЕР ===== */
+  .container {
+    background: #ffffff;
+    border-radius: 28px;
+    padding: 32px 28px;
+    max-width: 680px;
+    width: 100%;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.18);
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+    margin-top: 40px;
+    margin-bottom: 20px;
+  }
+
+  .container::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(246,160,46,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* ===== ОБЛОЖКА-ПРИВЕТСТВИЕ ===== */
+  .cover {
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    padding: 12px 0;
+    animation: fadeIn 0.6s ease;
+  }
+
+  .cover-emoji {
+    font-size: 72px;
+    line-height: 1;
+    margin-bottom: 16px;
+    display: inline-block;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  .cover-title {
+    font-size: 34px;
+    font-weight: 900;
+    margin-bottom: 10px;
+    background: linear-gradient(90deg, #f6a02e, #e05a8a);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.5px;
+    line-height: 1.15;
+  }
+
+  .cover-subtitle {
+    font-size: 16px;
+    color: #888;
+    font-weight: 500;
+    margin-bottom: 28px;
+    line-height: 1.5;
+  }
+
+  .cover-divider {
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(90deg, #f6a02e, #e05a8a);
+    border-radius: 2px;
+    margin: 0 auto 28px;
+  }
+
+  .cover-intro {
+    background: linear-gradient(135deg, #fff9f0 0%, #ffeef5 100%);
+    border-radius: 20px;
+    padding: 22px 24px;
+    margin-bottom: 24px;
+    text-align: left;
+    border: 2px solid rgba(246,160,46,0.15);
+  }
+
+  .cover-intro-title {
+    font-size: 17px;
+    font-weight: 800;
+    color: #e05a8a;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .cover-intro-text {
+    font-size: 14.5px;
+    line-height: 1.65;
+    color: #444;
+  }
+
+  .cover-intro-text p {
+    margin-bottom: 10px;
+  }
+
+  .cover-intro-text p:last-child { margin-bottom: 0; }
+
+  .cover-intro-text strong {
+    color: #e05a8a;
+    font-weight: 700;
+  }
+
+  .cover-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 24px;
+    text-align: left;
+  }
+
+  .cover-step {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    background: #fafafa;
+    border-radius: 14px;
+    border-left: 4px solid #f6a02e;
+    transition: transform 0.2s;
+  }
+
+  .cover-step:hover { transform: translateX(4px); }
+
+  .cover-step-emoji {
+    font-size: 26px;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  .cover-step-content { flex: 1; }
+
+  .cover-step-title {
+    font-size: 14px;
+    font-weight: 800;
+    color: #2d2d2d;
+    margin-bottom: 2px;
+  }
+
+  .cover-step-desc {
+    font-size: 13px;
+    color: #777;
+    line-height: 1.4;
+  }
+
+  .cover-note {
+    background: #eef7ff;
+    border-radius: 14px;
+    padding: 14px 18px;
+    margin-bottom: 24px;
+    font-size: 13.5px;
+    color: #3b6e9e;
+    line-height: 1.55;
+    text-align: left;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .cover-note-emoji {
+    font-size: 20px;
+    flex-shrink: 0;
+    line-height: 1.3;
+  }
+
+  .cover-note strong {
+    color: #2c5a8a;
+    font-weight: 700;
+  }
+
+  .cover-start-btn {
+    width: 100%;
+    padding: 18px 28px;
+    background: linear-gradient(90deg, #f6a02e, #e05a8a);
+    color: white;
+    border: none;
+    border-radius: 18px;
+    font-size: 18px;
+    font-weight: 800;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-shadow: 0 8px 24px rgba(224,90,138,0.35);
+    letter-spacing: 0.3px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cover-start-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(224,90,138,0.5);
+  }
+
+  .cover-start-btn:active {
+    transform: translateY(-1px) scale(0.99);
+  }
+
+  .cover-start-btn::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.6s;
+  }
+
+  .cover-start-btn:hover::after {
+    left: 100%;
+  }
+
+  .cover-meta {
+    font-size: 12.5px;
+    color: #999;
+    margin-top: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .cover-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  /* ===== ПРОГРЕСС ===== */
+  .progress-wrap {
+    margin-bottom: 28px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .progress-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 13px;
+    color: #888;
+    font-weight: 500;
+  }
+
+  .progress-bar {
+    height: 8px;
+    background: #f0f0f0;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #f6a02e, #e05a8a);
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 4px;
+  }
+
+  .stage-badge {
+    display: inline-block;
+    background: linear-gradient(90deg, #fff4e6, #ffe0ec);
+    color: #e05a8a;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .question {
+    font-size: 21px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: #1a1a1a;
+    line-height: 1.35;
+    position: relative;
+    z-index: 1;
+    animation: fadeIn 0.4s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .answer {
+    display: block;
+    width: 100%;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    background: #f8f9fa;
+    border: 2px solid transparent;
+    border-radius: 16px;
+    font-size: 15px;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #2d2d2d;
+    line-height: 1.45;
+    position: relative;
+    z-index: 1;
+    animation: fadeIn 0.4s ease;
+    animation-fill-mode: both;
+  }
+
+  .answer:nth-child(1) { animation-delay: 0.05s; }
+  .answer:nth-child(2) { animation-delay: 0.1s; }
+  .answer:nth-child(3) { animation-delay: 0.15s; }
+  .answer:nth-child(4) { animation-delay: 0.2s; }
+
+  .answer:hover {
+    background: #fff4e6;
+    border-color: #f6a02e;
+    transform: translateX(4px);
+    box-shadow: 0 4px 16px rgba(246,160,46,0.15);
+  }
+
+  .answer:active { transform: translateX(2px) scale(0.99); }
+
+  .answer.selected {
+    background: #fff4e6;
+    border-color: #f6a02e;
+    box-shadow: 0 4px 20px rgba(246,160,46,0.3);
+  }
+
+  .btn {
+    padding: 14px 28px;
+    border: none;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-right: 8px;
+    margin-top: 8px;
+  }
+
+  .btn-primary {
+    background: linear-gradient(90deg, #f6a02e, #e05a8a);
+    color: white;
+    box-shadow: 0 4px 16px rgba(224,90,138,0.3);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(224,90,138,0.45);
+  }
+
+  .btn-secondary {
+    background: #f0f0f0;
+    color: #666;
+  }
+
+  .btn-secondary:hover { background: #e5e5e5; }
+
+  .hidden { display: none !important; }
+
+  /* ===== РЕЗУЛЬТАТ ===== */
+  .result-title {
+    font-size: 26px;
+    font-weight: 800;
+    margin-bottom: 6px;
+    background: linear-gradient(90deg, #f6a02e, #e05a8a);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+    z-index: 1;
+  }
+
+  .result-sub {
+    color: #888;
+    font-size: 14px;
+    margin-bottom: 28px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .chart {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 24px 0;
+    padding: 20px;
+    background: #fafafa;
+    border-radius: 18px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .chart-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .chart-label {
+    width: 130px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #444;
+    flex-shrink: 0;
+  }
+
+  .chart-bar {
+    flex: 1;
+    height: 22px;
+    background: #eee;
+    border-radius: 11px;
+    overflow: hidden;
+  }
+
+  .chart-fill {
+    height: 100%;
+    border-radius: 11px;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 0;
+  }
+
+  .chart-score {
+    width: 36px;
+    text-align: right;
+    font-weight: 700;
+    font-size: 14px;
+    color: #333;
+    flex-shrink: 0;
+  }
+
+  .type-block {
+    margin: 16px 0;
+    padding: 20px;
+    border-radius: 18px;
+    background: #fafafa;
+    position: relative;
+    z-index: 1;
+    border-left: 4px solid;
+  }
+
+  .type-title {
+    font-size: 20px;
+    font-weight: 800;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .type-sub {
+    color: #888;
+    font-size: 13px;
+    margin-bottom: 14px;
+    font-weight: 500;
+  }
+
+  .type-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 12px 0 6px;
+  }
+
+  .list {
+    padding-left: 20px;
+    line-height: 1.9;
+    font-size: 14px;
+    color: #333;
+  }
+
+  .list li { margin-bottom: 2px; }
+
+  .professions {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #333;
+    margin-top: 6px;
+  }
+
+  .thoughts {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #444;
+    font-style: italic;
+    padding: 12px 16px;
+    background: #fff9f0;
+    border-radius: 12px;
+    margin-top: 6px;
+  }
+
+  .thoughts p { margin-bottom: 8px; }
+  .thoughts p:last-child { margin-bottom: 0; }
+  .thoughts strong { font-style: normal; color: #e05a8a; }
+
+  .actions {
+    margin-top: 28px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ===== ОТКРЫТЫЕ ВОПРОСЫ ===== */
+  .open-input {
+    width: 100%;
+    padding: 16px;
+    border: 2px solid #eee;
+    border-radius: 16px;
+    font-size: 15px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 100px;
+    margin-bottom: 16px;
+    transition: border-color 0.2s;
+    position: relative;
+    z-index: 1;
+    line-height: 1.5;
+  }
+
+  .open-input:focus {
+    outline: none;
+    border-color: #f6a02e;
+    box-shadow: 0 0 0 4px rgba(246,160,46,0.1);
+  }
+
+  .open-hint {
+    font-size: 13px;
+    color: #999;
+    margin-bottom: 12px;
+    font-style: italic;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ===== РЕКЛАМНЫЙ БЛОК НА ЭКРАНЕ РЕЗУЛЬТАТА ===== */
+  .promo-result {
+    margin-top: 28px;
+    padding: 20px 22px;
+    background: linear-gradient(135deg, #fff9f0 0%, #ffeef5 100%);
+    border-radius: 18px;
+    border: 2px dashed rgba(224,90,138,0.3);
+    position: relative;
+    z-index: 1;
+  }
+
+  .promo-result-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: #e05a8a;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .promo-result-text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #444;
+    margin-bottom: 12px;
+  }
+
+  .promo-result-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .promo-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 18px;
+    background: white;
+    border: 2px solid #e05a8a;
+    border-radius: 12px;
+    color: #e05a8a;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 700;
+    transition: all 0.2s;
+  }
+
+  .promo-link:hover {
+    background: #e05a8a;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(224,90,138,0.3);
+  }
+
+  /* ===== ФУТЕР ===== */
+  .footer {
+    width: 100%;
+    max-width: 680px;
+    text-align: center;
+    padding: 16px;
+    font-size: 12px;
+    color: #666;
+    position: relative;
+    z-index: 1;
+    line-height: 1.6;
+  }
+
+  .footer a {
+    color: #e05a8a;
+    text-decoration: none;
+    font-weight: 700;
+    transition: opacity 0.2s;
+  }
+
+  .footer a:hover { opacity: 0.75; text-decoration: underline; }
+
+  /* ===== МОБИЛЬНАЯ ВЕРСИЯ ===== */
+  @media (max-width: 520px) {
+    .container { padding: 24px 20px; border-radius: 22px; margin-top: 44px; }
+    .cover-emoji { font-size: 56px; }
+    .cover-title { font-size: 26px; }
+    .cover-subtitle { font-size: 14px; }
+    .cover-intro { padding: 18px 18px; }
+    .cover-intro-text { font-size: 13.5px; }
+    .cover-step { padding: 10px 14px; }
+    .cover-step-emoji { font-size: 22px; }
+    .cover-step-title { font-size: 13px; }
+    .cover-step-desc { font-size: 12px; }
+    .cover-start-btn { font-size: 16px; padding: 16px 24px; }
+    .question { font-size: 18px; }
+    .answer { padding: 14px 16px; font-size: 14px; }
+    .chart-label { width: 100px; font-size: 11px; }
+    .type-title { font-size: 17px; }
+    .result-title { font-size: 22px; }
+    .btn { padding: 12px 20px; font-size: 15px; }
+    .top-promo { font-size: 11px; padding: 7px 12px; }
+    body::before { font-size: 26px; letter-spacing: 4px; }
+    .promo-result-links { flex-direction: column; }
+    .promo-link { justify-content: center; width: 100%; }
+  }
+
+  /* ===== ПЕЧАТЬ ===== */
+  @media print {
+    body { background: white; padding: 0; }
+    body::before { display: none; }
+    .top-promo, .footer, .actions, .progress-wrap, .promo-result, .cover { display: none; }
+    .container { box-shadow: none; max-width: 100%; margin: 0; }
+    .chart-fill { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ВЕРХНЯЯ РЕКЛАМНАЯ ПОЛОСА -->
+<div class="top-promo">
+  📚 Подготовка к ОГЭ/ЕГЭ и занятия по математике в «Мягкой математике» ·
+  <a href="https://vk.com/smartskillsmaria" target="_blank" rel="noopener">Подписаться на группу ВК</a>
+</div>
+
+<!-- ОСНОВНОЙ КОНТЕЙНЕР -->
+<div class="container">
+  <div class="progress-wrap hidden" id="progressWrap">
+    <div class="progress-info">
+      <span id="stageLabel">Этап 1 из 5</span>
+      <span id="progressPercent">0%</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+  </div>
+  <div id="app"></div>
+</div>
+
+<!-- ФУТЕР -->
+<div class="footer">
+  Игра «Компас Пути» · Подготовка к ОГЭ/ЕГЭ и занятия по математике —<br>
+  <a href="https://vk.com/smartskillsmaria" target="_blank" rel="noopener">Группа «Мягкая математика»</a> ·
+  <a href="https://vk.com/im/convo/-229273902?entrypoint=community_page&tab=all" target="_blank" rel="noopener">Написать Марии Абрамовой</a>
+</div>
+
+<script>
+/* ============================================================
+   БАНК ВОПРОСОВ
+   ============================================================ */
+
+const STAGES = [
+  { name: "ОСТРОВ ВРЕМЕНИ", emoji: "⏳" },
+  { name: "ОСТРОВ СИЛЫ", emoji: "💪" },
+  { name: "ОСТРОВ ЦЕННОСТЕЙ", emoji: "💎" },
+  { name: "ОСТРОВ МЕЧТЫ", emoji: "🌟" },
+  { name: "ОСТРОВ ВОПРОСОВ", emoji: "❓" }
+];
+
+const QUESTIONS = [
+  { stage: 0, text: "Чем ты любишь заниматься в свободное время?", answers: [
+    { text: "Рисовать, придумывать истории, делать поделки", primary: "creator", secondary: "practitioner" },
+    { text: "Читать, разгадывать загадки, смотреть научные видео", primary: "researcher", secondary: "creator" },
+    { text: "Общаться с друзьями, помогать близким", primary: "helper", secondary: "organizer" },
+    { text: "Собирать конструкторы, чинить, мастерить", primary: "practitioner", secondary: "researcher" }
+  ]},
+  { stage: 0, text: "Какой школьный предмет тебе нравится больше всего?", answers: [
+    { text: "Литература, ИЗО, музыка", primary: "creator", secondary: "helper" },
+    { text: "Математика, физика, информатика", primary: "researcher", secondary: "organizer" },
+    { text: "История, обществознание, иностранный язык", primary: "helper", secondary: "creator" },
+    { text: "Технология, физкультура, ОБЖ", primary: "practitioner", secondary: "organizer" }
+  ]},
+  { stage: 0, text: "Что ты делаешь, когда тебе скучно?", answers: [
+    { text: "Придумываю что-то новое, фантазирую", primary: "creator", secondary: "researcher" },
+    { text: "Ищу интересную информацию, читаю", primary: "researcher", secondary: "creator" },
+    { text: "Звоню другу, иду к кому-то в гости", primary: "helper", secondary: "practitioner" },
+    { text: "Навожу порядок, планирую дела", primary: "organizer", secondary: "practitioner" }
+  ]},
+  { stage: 0, text: "Какое занятие приносит тебе больше всего радости?", answers: [
+    { text: "Когда я что-то создаю своими руками", primary: "creator", secondary: "practitioner" },
+    { text: "Когда я узнаю что-то новое и понимаю, как это работает", primary: "researcher", secondary: "creator" },
+    { text: "Когда я помогаю кому-то и вижу результат", primary: "helper", secondary: "organizer" },
+    { text: "Когда я довожу дело до конца и всё работает", primary: "practitioner", secondary: "organizer" }
+  ]},
+  { stage: 0, text: "Если бы у тебя был целый свободный день, чем бы ты занялся?", answers: [
+    { text: "Творил бы: рисовал, писал, придумывал", primary: "creator", secondary: "researcher" },
+    { text: "Исследовал бы: читал, смотрел, экспериментировал", primary: "researcher", secondary: "creator" },
+    { text: "Общался бы: встретился с друзьями, помог кому-то", primary: "helper", secondary: "practitioner" },
+    { text: "Делал бы: строил, чинил, мастерил", primary: "practitioner", secondary: "organizer" }
+  ]},
+  { stage: 1, text: "За что тебя чаще всего хвалят?", answers: [
+    { text: "За красивые идеи и необычные решения", primary: "creator", secondary: "researcher" },
+    { text: "За умные мысли и хорошие оценки", primary: "researcher", secondary: "organizer" },
+    { text: "За доброту и умение помочь", primary: "helper", secondary: "creator" },
+    { text: "За то, что довожу дело до конца", primary: "practitioner", secondary: "organizer" }
+  ]},
+  { stage: 1, text: "Что тебе даётся легче всего?", answers: [
+    { text: "Придумывать что-то новое", primary: "creator", secondary: "helper" },
+    { text: "Решать сложные задачи", primary: "researcher", secondary: "practitioner" },
+    { text: "Общаться с людьми", primary: "helper", secondary: "creator" },
+    { text: "Организовывать и планировать", primary: "organizer", secondary: "practitioner" }
+  ]},
+  { stage: 1, text: "В чём ты чувствуешь себя уверенно?", answers: [
+    { text: "В творчестве", primary: "creator", secondary: "researcher" },
+    { text: "В учёбе и решении задач", primary: "researcher", secondary: "organizer" },
+    { text: "В общении и дружбе", primary: "helper", secondary: "creator" },
+    { text: "В конкретных делах", primary: "practitioner", secondary: "organizer" }
+  ]},
+  { stage: 1, text: "Что у тебя получается быстрее, чем у других?", answers: [
+    { text: "Придумывать идеи", primary: "creator", secondary: "helper" },
+    { text: "Понимать сложное", primary: "researcher", secondary: "creator" },
+    { text: "Договариваться и мирить", primary: "helper", secondary: "organizer" },
+    { text: "Делать руками", primary: "practitioner", secondary: "researcher" }
+  ]},
+  { stage: 1, text: "Какая роль тебе ближе в команде?", answers: [
+    { text: "Генератор идей", primary: "creator", secondary: "researcher" },
+    { text: "Аналитик", primary: "researcher", secondary: "organizer" },
+    { text: "Тот, кто поддерживает", primary: "helper", secondary: "creator" },
+    { text: "Тот, кто организует", primary: "organizer", secondary: "practitioner" }
+  ]},
+  { stage: 2, text: "Что для тебя важнее всего в жизни?", answers: [
+    { text: "Свобода и творчество", primary: "creator", secondary: "researcher" },
+    { text: "Знания и истина", primary: "researcher", secondary: "creator" },
+    { text: "Дружба и помощь", primary: "helper", secondary: "organizer" },
+    { text: "Стабильность и порядок", primary: "organizer", secondary: "practitioner" }
+  ]},
+  { stage: 2, text: "Что бы ты выбрал, если бы мог?", answers: [
+    { text: "Создать что-то уникальное", primary: "creator", secondary: "practitioner" },
+    { text: "Открыть что-то новое", primary: "researcher", secondary: "creator" },
+    { text: "Помочь многим людям", primary: "helper", secondary: "organizer" },
+    { text: "Построить надёжное дело", primary: "practitioner", secondary: "organizer" }
+  ]},
+  { stage: 2, text: "Что тебя вдохновляет?", answers: [
+    { text: "Красота и искусство", primary: "creator", secondary: "helper" },
+    { text: "Научные открытия", primary: "researcher", secondary: "creator" },
+    { text: "Люди и их истории", primary: "helper", secondary: "creator" },
+    { text: "Результаты труда", primary: "practitioner", secondary: "organizer" }
+  ]},
+  { stage: 2, text: "Что для тебя главное в работе?", answers: [
+    { text: "Возможность творить", primary: "creator", secondary: "researcher" },
+    { text: "Возможность узнавать новое", primary: "researcher", secondary: "creator" },
+    { text: "Возможность помогать", primary: "helper", secondary: "organizer" },
+    { text: "Возможность видеть результат", primary: "practitioner", secondary: "organizer" }
+  ]},
+  { stage: 2, text: "Что бы ты хотел изменить в мире?", answers: [
+    { text: "Сделать его красивее", primary: "creator", secondary: "helper" },
+    { text: "Сделать его умнее", primary: "researcher", secondary: "creator" },
+    { text: "Сделать его добрее", primary: "helper", secondary: "creator" },
+    { text: "Сделать его удобнее", primary: "practitioner", secondary: "organizer" }
+  ]},
+  { stage: 3, text: "Какая профессия тебе кажется интересной?", answers: [
+    { text: "Дизайнер, художник, писатель", primary: "creator", secondary: "researcher" },
+    { text: "Учёный, программист, аналитик", primary: "researcher", secondary: "creator" },
+    { text: "Врач, учитель, психолог", primary: "helper", secondary: "organizer" },
+    { text: "Инженер, строитель, механик", primary: "practitioner", secondary: "researcher" }
+  ]},
+  { stage: 3, text: "Где бы ты хотел работать?", answers: [
+    { text: "В творческой студии", primary: "creator", secondary: "helper" },
+    { text: "В лаборатории или офисе", primary: "researcher", secondary: "organizer" },
+    { text: "С людьми: в школе, больнице, центре", primary: "helper", secondary: "creator" },
+    { text: "На производстве или стройке", primary: "practitioner", secondary: "organizer" }
+  ]},
+  { stage: 3, text: "Что бы ты делал на работе мечты?", answers: [
+    { text: "Придумывал новое", primary: "creator", secondary: "researcher" },
+    { text: "Исследовал и анализировал", primary: "researcher", secondary: "creator" },
+    { text: "Помогал людям", primary: "helper", secondary: "organizer" },
+    { text: "Создавал конкретные вещи", primary: "practitioner", secondary: "researcher" }
+  ]},
+  { stage: 3, text: "Какая работа тебе кажется самой важной?", answers: [
+    { text: "Художник, музыкант, режиссёр", primary: "creator", secondary: "helper" },
+    { text: "Врач, учёный, инженер", primary: "researcher", secondary: "practitioner" },
+    { text: "Учитель, психолог, соцработник", primary: "helper", secondary: "creator" },
+    { text: "Строитель, пилот, спасатель", primary: "practitioner", secondary: "organizer" }
+  ]},
+  { stage: 3, text: "Чем бы ты хотел заниматься через 10 лет?", answers: [
+    { text: "Творчеством", primary: "creator", secondary: "researcher" },
+    { text: "Наукой или технологиями", primary: "researcher", secondary: "organizer" },
+    { text: "Помощью людям", primary: "helper", secondary: "creator" },
+    { text: "Конкретным делом", primary: "practitioner", secondary: "organizer" }
+  ]}
+];
+
+const OPEN_QUESTIONS = [
+  { text: "Что ты делаешь, когда никто не видит?", placeholder: "Например: читаю, рисую, мечтаю..." },
+  { text: "Что бы ты делал, если бы не боялся?", placeholder: "Например: выступил бы на сцене, попробовал бы новый спорт..." },
+  { text: "Каким ты хочешь быть через 5 лет?", placeholder: "Например: уверенным, умелым, счастливым..." }
+];
+
+/* ============================================================
+   ОПИСАНИЯ ТИПОВ
+   ============================================================ */
+
+const TYPES = {
+  creator: {
+    name: "ТВОРЕЦ", emoji: "🎨", color: "#e05a8a", bg: "#fce7f0",
+    strengths: ["Богатое воображение и новые идеи", "Умение видеть необычное в обычном", "Способность увлекать других своими идеями", "Гибкость мышления"],
+    develop: ["Доводить начатое до конца", "Дисциплина и режим", "Умение работать в рамках"],
+    professions: "Дизайнер, художник, писатель, режиссёр, архитектор, гейм-дизайнер, музыкант, иллюстратор, фотограф, сценарист"
+  },
+  researcher: {
+    name: "ИССЛЕДОВАТЕЛЬ", emoji: "🔬", color: "#3b82f6", bg: "#e0edff",
+    strengths: ["Логика и аналитическое мышление", "Любознательность и тяга к знаниям", "Умение находить закономерности", "Способность глубоко разбираться в теме"],
+    develop: ["Умение объяснять простыми словами", "Гибкость мышления", "Работа в команде"],
+    professions: "Учёный, программист, аналитик данных, инженер, врач, исследователь, математик, физик, химик, биоинформатик"
+  },
+  helper: {
+    name: "ПОМОЩНИК", emoji: "💚", color: "#10b981", bg: "#e0f7ee",
+    strengths: ["Эмпатия и понимание других", "Умение слушать и слышать", "Способность поддерживать в трудную минуту", "Хорошие коммуникативные навыки"],
+    develop: ["Границы и забота о себе", "Уверенность в своих решениях", "Умение говорить «нет»"],
+    professions: "Врач, педагог, психолог, тренер, социальный работник, HR-специалист, медсестра, воспитатель, коуч, волонтёр"
+  },
+  organizer: {
+    name: "ОРГАНИЗАТОР", emoji: "📋", color: "#f59e0b", bg: "#fef3d7",
+    strengths: ["Планирование и структурирование", "Надёжность и ответственность", "Умение доводить дела до конца", "Внимание к деталям"],
+    develop: ["Гибкость и творческий подход", "Умение импровизировать", "Открытость к новому"],
+    professions: "Менеджер, бухгалтер, логист, администратор, руководитель проектов, аналитик, экономист, юрист, event-менеджер, продюсер"
+  },
+  practitioner: {
+    name: "ПРАКТИК", emoji: "🔧", color: "#8b5cf6", bg: "#ede9fe",
+    strengths: ["Конкретные дела и результат", "Работа руками и с техникой", "Ориентация на практику", "Умение решать реальные задачи"],
+    develop: ["Стратегическое мышление", "Умение видеть большую картину", "Планирование на перспективу"],
+    professions: "Инженер, механик, строитель, повар, электрик, пилот, агроном, сварщик, автомеханик, робототехник"
+  }
+};
+
+/* ============================================================
+   СОСТОЯНИЕ
+   ============================================================ */
+
+let state = {
+  currentQuestion: 0,
+  currentOpen: 0,
+  scales: { creator: 0, researcher: 0, helper: 0, organizer: 0, practitioner: 0 },
+  answers: [],
+  openAnswers: [],
+  phase: "cover"
+};
+
+const app = document.getElementById('app');
+const progressWrap = document.getElementById('progressWrap');
+const progressFill = document.getElementById('progressFill');
+const stageLabel = document.getElementById('stageLabel');
+const progressPercent = document.getElementById('progressPercent');
+
+/* ============================================================
+   ОБЛОЖКА-ПРИВЕТСТВИЕ
+   ============================================================ */
+
+function renderCover() {
+  state.phase = "cover";
+  progressWrap.classList.add('hidden');
+
+  app.innerHTML = `
+    <div class="cover">
+      <div class="cover-emoji">🧭</div>
+      <div class="cover-title">КОМПАС ПУТИ</div>
+      <div class="cover-subtitle">Игра-путешествие по твоей внутренней Вселенной</div>
+      <div class="cover-divider"></div>
+
+      <div class="cover-intro">
+        <div class="cover-intro-title">✨ Что это за игра?</div>
+        <div class="cover-intro-text">
+          <p>Это не обычный тест. Это <strong>путешествие по 5 островам</strong>, на каждом из которых ты найдёшь одну часть волшебного кристалла — часть себя.</p>
+          <p>В конце игры ты соберёшь <strong>«Кристалл моего Я»</strong> — персональный портрет, который покажет твои сильные стороны, интересы и профессии, которые могут тебе подойти.</p>
+          <p>Здесь <strong>нет правильных и неправильных ответов</strong>. Только ты и твои честные ответы.</p>
+        </div>
+      </div>
+
+      <div class="cover-steps">
+        <div class="cover-step">
+          <div class="cover-step-emoji">⏳</div>
+          <div class="cover-step-content">
+            <div class="cover-step-title">Остров Времени</div>
+            <div class="cover-step-desc">Что я люблю делать и что меня зажигает</div>
+          </div>
+        </div>
+        <div class="cover-step">
+          <div class="cover-step-emoji">💪</div>
+          <div class="cover-step-content">
+            <div class="cover-step-title">Остров Силы</div>
+            <div class="cover-step-desc">Что мне даётся легко и за что меня хвалят</div>
+          </div>
+        </div>
+        <div class="cover-step">
+          <div class="cover-step-emoji">💎</div>
+          <div class="cover-step-content">
+            <div class="cover-step-title">Остров Ценностей</div>
+            <div class="cover-step-desc">Что для меня важно в жизни и в работе</div>
+          </div>
+        </div>
+        <div class="cover-step">
+          <div class="cover-step-emoji">🌟</div>
+          <div class="cover-step-content">
+            <div class="cover-step-title">Остров Мечты</div>
+            <div class="cover-step-desc">Кем я могу стать и что мне интересно пробовать</div>
+          </div>
+        </div>
+        <div class="cover-step">
+          <div class="cover-step-emoji">❓</div>
+          <div class="cover-step-content">
+            <div class="cover-step-title">Остров Вопросов</div>
+            <div class="cover-step-desc">Что я ещё о себе не знаю — и это самое интересное</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cover-note">
+        <div class="cover-note-emoji">💡</div>
+        <div><strong>Совет:</strong> отвечай честно и не думай долго. Первое, что приходит в голову, — самое точное. Игра занимает около 10–15 минут.</div>
+      </div>
+
+      <button class="cover-start-btn" id="startBtn">🚀 Начать путешествие</button>
+
+      <div class="cover-meta">
+        <div class="cover-meta-item">⏱ ~10–15 минут</div>
+        <div class="cover-meta-item">🎯 28 вопросов</div>
+        <div class="cover-meta-item">🧭 5 островов</div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('startBtn').addEventListener('click', () => {
+    state.phase = "closed";
+    state.currentQuestion = 0;
+    progressWrap.classList.remove('hidden');
+    renderClosedQuestion();
+  });
+}
+
+/* ============================================================
+   ПРОГРЕСС
+   ============================================================ */
+
+function updateProgress() {
+  let total, current;
+  if (state.phase === "closed") {
+    total = QUESTIONS.length + OPEN_QUESTIONS.length;
+    current = state.currentQuestion;
+  } else if (state.phase === "open") {
+    total = QUESTIONS.length + OPEN_QUESTIONS.length;
+    current = QUESTIONS.length + state.currentOpen;
+  } else {
+    progressFill.style.width = '100%';
+    progressPercent.textContent = '100%';
+    stageLabel.textContent = 'Готово!';
+    return;
+  }
+  const percent = Math.round((current / total) * 100);
+  progressFill.style.width = percent + '%';
+  progressPercent.textContent = percent + '%';
+
+  let stageName;
+  if (state.phase === "closed") {
+    const stageIdx = QUESTIONS[state.currentQuestion].stage;
+    stageName = STAGES[stageIdx].emoji + ' ' + STAGES[stageIdx].name;
+  } else {
+    stageName = STAGES[4].emoji + ' ' + STAGES[4].name;
+  }
+  stageLabel.textContent = stageName;
+}
+
+/* ============================================================
+   ВОПРОСЫ
+   ============================================================ */
+
+function renderClosedQuestion() {
+  state.phase = "closed";
+  const q = QUESTIONS[state.currentQuestion];
+  updateProgress();
+
+  let html = `<div class="stage-badge">${STAGES[q.stage].emoji} ${STAGES[q.stage].name}</div>`;
+  html += `<div class="question">${q.text}</div>`;
+  html += `<div id="answersBlock">`;
+  q.answers.forEach((ans, i) => {
+    html += `<button class="answer" data-index="${i}">${ans.text}</button>`;
+  });
+  html += `</div>`;
+  app.innerHTML = html;
+
+  document.querySelectorAll('.answer').forEach(btn => {
+    btn.addEventListener('click', () => handleClosedAnswer(parseInt(btn.dataset.index)));
+  });
+}
+
+function handleClosedAnswer(index) {
+  const q = QUESTIONS[state.currentQuestion];
+  const ans = q.answers[index];
+  state.scales[ans.primary] += 2;
+  state.scales[ans.secondary] += 1;
+  state.answers.push(index);
+
+  document.querySelectorAll('.answer').forEach((btn, i) => {
+    if (i === index) btn.classList.add('selected');
+    btn.disabled = true;
+  });
+
+  setTimeout(() => {
+    state.currentQuestion++;
+    if (state.currentQuestion < QUESTIONS.length) {
+      renderClosedQuestion();
+    } else {
+      state.phase = "open";
+      state.currentOpen = 0;
+      renderOpenQuestion();
+    }
+  }, 280);
+}
+
+function renderOpenQuestion() {
+  state.phase = "open";
+  const oq = OPEN_QUESTIONS[state.currentOpen];
+  updateProgress();
+
+  app.innerHTML = `
+    <div class="stage-badge">${STAGES[4].emoji} ${STAGES[4].name}</div>
+    <div class="question">${oq.text}</div>
+    <div class="open-hint">Здесь нет правильных ответов. Напиши то, что первое приходит в голову.</div>
+    <textarea class="open-input" id="openInput" placeholder="${oq.placeholder}"></textarea>
+    <button class="btn btn-primary" id="nextOpenBtn">
+      ${state.currentOpen < OPEN_QUESTIONS.length - 1 ? 'Дальше →' : 'Собрать портрет ✨'}
+    </button>
+    ${state.currentOpen > 0 ? '<button class="btn btn-secondary" id="backOpenBtn">← Назад</button>' : ''}
+  `;
+
+  const input = document.getElementById('openInput');
+  input.value = state.openAnswers[state.currentOpen] || '';
+  input.focus();
+
+  document.getElementById('nextOpenBtn').addEventListener('click', () => {
+    state.openAnswers[state.currentOpen] = input.value.trim();
+    state.currentOpen++;
+    if (state.currentOpen < OPEN_QUESTIONS.length) {
+      renderOpenQuestion();
+    } else {
+      state.phase = "result";
+      renderResult();
+    }
+  });
+
+  const backBtn = document.getElementById('backOpenBtn');
+  if (backBtn) {
+    backBtn.addEventListener('click', () => {
+      state.openAnswers[state.currentOpen] = input.value.trim();
+      state.currentOpen--;
+      renderOpenQuestion();
+    });
+  }
+}
+
+/* ============================================================
+   РЕЗУЛЬТАТ
+   ============================================================ */
+
+function renderResult() {
+  progressFill.style.width = '100%';
+  progressPercent.textContent = '100%';
+  stageLabel.textContent = 'Готово!';
+  setTimeout(() => progressWrap.classList.add('hidden'), 600);
+
+  const sorted = Object.entries(state.scales).sort((a, b) => b[1] - a[1]);
+  const main = TYPES[sorted[0][0]];
+  const second = TYPES[sorted[1][0]];
+  const maxScore = 50;
+
+  let chartHtml = '<div class="chart">';
+  Object.entries(state.scales).forEach(([key, val]) => {
+    const t = TYPES[key];
+    const width = (val / maxScore) * 100;
+    chartHtml += `
+      <div class="chart-row">
+        <div class="chart-label">${t.emoji} ${t.name}</div>
+        <div class="chart-bar">
+          <div class="chart-fill" style="width:0%;background:${t.color};" data-width="${width}"></div>
+        </div>
+        <div class="chart-score">${val}</div>
+      </div>
+    `;
+  });
+  chartHtml += '</div>';
+
+  let thoughtsHtml = '';
+  if (state.openAnswers.some(a => a && a.length > 0)) {
+    thoughtsHtml = '<div class="type-block" style="border-left-color:#f6a02e;background:#fff9f0;">';
+    thoughtsHtml += '<div class="type-title">💭 Твои мысли</div>';
+    thoughtsHtml += '<div class="thoughts">';
+    OPEN_QUESTIONS.forEach((oq, i) => {
+      const ans = state.openAnswers[i];
+      if (ans && ans.length > 0) {
+        thoughtsHtml += `<p><strong>${oq.text}</strong><br>${escapeHtml(ans)}</p>`;
+      }
+    });
+    thoughtsHtml += '</div></div>';
+  }
+
+  const promoHtml = `
+    <div class="promo-result">
+      <div class="promo-result-title">🎓 Хочешь узнать больше о своих сильных сторонах?</div>
+      <div class="promo-result-text">
+        В «Мягкой математике» мы помогаем не только с подготовкой к ОГЭ/ЕГЭ по математике, но и с выбором пути.
+        Подписывайся на группу и задай вопрос Марии Абрамовой — она поможет разобраться.
+      </div>
+      <div class="promo-result-links">
+        <a class="promo-link" href="https://vk.com/smartskillsmaria" target="_blank" rel="noopener">
+          📚 Подписаться на группу
+        </a>
+        <a class="promo-link" href="https://vk.com/im/convo/-229273902?entrypoint=community_page&tab=all" target="_blank" rel="noopener">
+          ✉️ Написать Марии Абрамовой
+        </a>
+      </div>
+    </div>
+  `;
+
+  app.innerHTML = `
+    <div class="result-title">Твой портрет путешественника</div>
+    <div class="result-sub">Это не приговор, а карта. Ты можешь её дополнять всю жизнь.</div>
+
+    ${chartHtml}
+
+    <div class="type-block" style="border-left-color:${main.color};background:${main.bg};">
+      <div class="type-title">${main.emoji} ГЛАВНЫЙ ТИП: ${main.name}</div>
+      <div class="type-sub">Уровень: ${getLevel(sorted[0][1])} · ${sorted[0][1]} баллов</div>
+      <div class="type-label">Твои сильные стороны</div>
+      <ul class="list">${main.strengths.map(s => `<li>${s}</li>`).join('')}</ul>
+      <div class="type-label">Что развивать</div>
+      <ul class="list">${main.develop.map(s => `<li>${s}</li>`).join('')}</ul>
+    </div>
+
+    <div class="type-block" style="border-left-color:${second.color};background:${second.bg};">
+      <div class="type-title">${second.emoji} ВТОРОЙ ТИП: ${second.name}</div>
+      <div class="type-sub">Уровень: ${getLevel(sorted[1][1])} · ${sorted[1][1]} баллов</div>
+      <div class="type-label">Твои сильные стороны</div>
+      <ul class="list">${second.strengths.slice(0, 3).map(s => `<li>${s}</li>`).join('')}</ul>
+    </div>
+
+    <div class="type-block" style="border-left-color:${main.color};">
+      <div class="type-title">🎯 Профессии, которые могут подойти</div>
+      <div class="professions">${main.professions}</div>
+    </div>
+
+    ${thoughtsHtml}
+    ${promoHtml}
+
+    <div class="actions">
+      <button class="btn btn-primary" id="printBtn">💾 Сохранить портрет</button>
+      <button class="btn btn-secondary" id="restartBtn">🔄 Пройти заново</button>
+    </div>
+  `;
+
+  setTimeout(() => {
+    document.querySelectorAll('.chart-fill').forEach(el => {
+      el.style.width = el.dataset.width + '%';
+    });
+  }, 100);
+
+  document.getElementById('printBtn').addEventListener('click', () => window.print());
+  document.getElementById('restartBtn').addEventListener('click', () => {
+    if (confirm('Начать заново? Текущий портрет не сохранится.')) {
+      location.reload();
+    }
+  });
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function getLevel(score) {
+  if (score >= 35) return 'Ярко выражено';
+  if (score >= 20) return 'Заметно';
+  if (score >= 10) return 'Слабо выражено';
+  return 'Почти не проявляется';
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+/* ============================================================
+   СТАРТ
+   ============================================================ */
+
+renderCover();
+</script>
+</body>
+</html>
